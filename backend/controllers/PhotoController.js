@@ -8,7 +8,7 @@ const insertPhoto = async (req, res) => {
   const { title } = req.body;
   const image = req.file.filename;
 
-  const reqUser = req.reqUser;
+  const reqUser = req.user;
   const user = await User.findById(reqUser._id);
 
   //Create a photo
