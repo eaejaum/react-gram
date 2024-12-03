@@ -72,25 +72,54 @@ const getUserPhotos = async (req, res) => {
     .sort([["createdAt", -1]])
     .exec();
 
-    return res.status(200).json(photos);
+  return res.status(200).json(photos);
 };
 
 const getPhotoById = async (req, res) => {
-    const { id } = req.params;
- 
-    try {
-      const photo = await Photo.findById(new mongoose.Types.ObjectId(`${id}`));
-   
-      res.status(200).json(photo);
-    } catch (error) {
-      res.status(404).json({ errors: ["Foto não encontrada."] });
-    }
-}
+  const { id } = req.params;
+
+  try {
+    const photo = await Photo.findById(new mongoose.Types.ObjectId(`${id}`));
+
+    res.status(200).json(photo);
+  } catch (error) {
+    res.status(404).json({ errors: ["Foto não encontrada."] });
+  }
+};
+
+const updatePhoto = async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+
+  const reqUser = req.user;
+
+  const photo = await Photo.findById(id);
+
+  if (!photo) {
+    res.status(404).json({ errors: ["Foto não encontrada!"] });
+  }
+
+  if (!photo.userId.equals(reqUser._id)) {
+    res
+      .status(422)
+      .json({ errors: ["Ocorreu um erro, tente novamente mais tarde!"] });
+    return;
+  }
+
+  if (title) {
+    photo.title = title;
+  }
+
+  await photo.save();
+
+  res.status(200).json({ photo, message: "Foto atualizada com sucesso!" });
+};
 
 module.exports = {
   insertPhoto,
   deletePhoto,
   getAllPhotos,
   getUserPhotos,
-  getPhotoById
+  getPhotoById,
+  updatePhoto,
 };
