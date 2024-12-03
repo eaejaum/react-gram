@@ -56,7 +56,15 @@ const deletePhoto = async (req, res) => {
       .json({ id: photo._id, message: "Foto excluída com sucesso." });
 };
 
+//Get all Photos
+const getAllPhotos = async (req, res) => {
+    const photos = await Photo.find({}).sort([["createdAt", -1]]).exec()
+
+    return res.status(200).json(photos)
+}
+
 module.exports = {
   insertPhoto,
   deletePhoto,
+  getAllPhotos
 };
