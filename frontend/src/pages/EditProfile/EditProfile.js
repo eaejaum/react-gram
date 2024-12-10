@@ -2,8 +2,9 @@ import "./EditProfile.css";
 
 import { uploads } from "../../utils/config";
 import { useSelector, useDispatch } from "react-redux";
-import { profile, resetMessage } from "../../slices/userSlice";
+import { profile, resetMessage, updateProfile } from "../../slices/userSlice";
 import { useEffect, useState } from "react";
+import Message from "../../components/Message";
 
 const EditProfile = () => {
   const dispatch = useDispatch();
@@ -34,8 +35,27 @@ const EditProfile = () => {
     setProfileImage(image);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const userData = {
+      name,
+    };
+
+    if (profileImage) userData.profileImage = profileImage;
+
+    if (bio) userData.bio = bio;
+
+    if (password) userData.password = password;
+
+    const userFormData = Object.keys(userData).reduce((formData, key) => {
+      formData.append(key, userData[key]);
+      return formData;
+    }, new FormData());
+    await dispatch(updateProfile(userFormData));
+
+    setTimeout(() => {
+      dispatch(resetMessage());
+    }, 2000);
   };
 
   return (
@@ -47,7 +67,11 @@ const EditProfile = () => {
       {(user.profileImage || previewImage) && (
         <img
           className="profile-image"
-          src={previewImage ? URL.createObjectURL(previewImage) : `${uploads}/users/${user.profileImage}` }
+          src={
+            previewImage
+              ? URL.createObjectURL(previewImage)
+              : `${uploads}/users/${user.profileImage}`
+          }
           alt={user.name}
         />
       )}
@@ -81,7 +105,10 @@ const EditProfile = () => {
             value={password}
           />
         </label>
-        <input type="submit" value="Atualizar" />
+        {!loading && <input type="submit" value="Atualizar" />}
+        {loading && <input type="submit" value="Aguarde..." disabled />}
+        {error && <Message msg={error} type="error" />}
+        {message && <Message msg={message} type="success" />}
       </form>
     </div>
   );
